@@ -9,6 +9,10 @@ const mysql = require("mysql");
 // 2. Найти чувака по номеру тачки
 // 3. Добавить чувака и тачку
 
+router.post("/", function (req, res, next) {
+  res.end("Valera backend");
+});
+
 router.get("/", function (req, res, next) {
   res.end("Valera backend");
 });
