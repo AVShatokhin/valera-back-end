@@ -1,5 +1,7 @@
 var createError = require("http-errors");
 var express = require("express");
+var conf = require("nconf").argv().env().file({ file: "./config/config.json" });
+
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
@@ -36,6 +38,24 @@ app.use(function (err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render("error");
+});
+
+const mysql = require("mysql");
+
+const connection = mysql.createConnection({
+  host: conf.get("db_host"),
+  user: conf.get("db_user"),
+  database: conf.get("db_name"),
+  password: conf.get("db_password"),
+});
+
+connection.connect((err) => {
+  if (err) {
+    console.log(err);
+    throw err;
+  }
+  USERendPoints.setConnection(connection);
+  console.log("mysql connected");
 });
 
 module.exports = app;
