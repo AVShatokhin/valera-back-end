@@ -6,8 +6,11 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
-var INDEXendPoints = require("./routes/index");
-var USERendPoints = require("./routes/user");
+var INDEX_endPoints = require("./routes/index");
+var USER_endPoints = require("./routes/user");
+var COSTS_endPoints = require("./routes/costs");
+var CLIENTS_endPoints = require("./routes/clients");
+var WORKERS_endPoints = require("./routes/workers");
 
 var app = express();
 
@@ -21,8 +24,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", INDEXendPoints);
-app.use("/user", USERendPoints);
+app.use("/", INDEX_endPoints);
+app.use("/user", USER_endPoints);
+app.use("/costs", COSTS_endPoints);
+app.use("/clients", CLIENTS_endPoints);
+app.use("/workers", WORKERS_endPoints);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -54,7 +60,10 @@ connection.connect((err) => {
     console.log(err);
     throw err;
   }
-  USERendPoints.setConnection(connection);
+  USER_endPoints.setConnection(connection);
+  COSTS_endPoints.setConnection(connection);
+  CLIENTS_endPoints.setConnection(connection);
+  WORKERS_endPoints.setConnection(connection);
   console.log("mysql connected");
 });
 
