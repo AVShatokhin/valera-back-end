@@ -11,6 +11,7 @@ var USER_endPoints = require("./routes/user");
 var COSTS_endPoints = require("./routes/costs");
 var CLIENTS_endPoints = require("./routes/clients");
 var WORKERS_endPoints = require("./routes/workers");
+var ORDERS_endPoints = require("./routes/orders");
 
 var app = express();
 
@@ -29,6 +30,7 @@ app.use("/user", USER_endPoints);
 app.use("/costs", COSTS_endPoints);
 app.use("/clients", CLIENTS_endPoints);
 app.use("/workers", WORKERS_endPoints);
+app.use("/orders", ORDERS_endPoints);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -60,11 +62,19 @@ connection.connect((err) => {
     console.log(err);
     throw err;
   }
-  USER_endPoints.setConnection(connection);
-  COSTS_endPoints.setConnection(connection);
-  CLIENTS_endPoints.setConnection(connection);
-  WORKERS_endPoints.setConnection(connection);
-  console.log("mysql connected");
+
+  connection.query("SET time_zone='+3:00';", function (err, result) {
+    if (err) {
+      throw err;
+    } else {
+      USER_endPoints.setConnection(connection);
+      COSTS_endPoints.setConnection(connection);
+      CLIENTS_endPoints.setConnection(connection);
+      WORKERS_endPoints.setConnection(connection);
+      ORDERS_endPoints.setConnection(connection);
+      console.log("mysql connected");
+    }
+  });
 });
 
 module.exports = app;
