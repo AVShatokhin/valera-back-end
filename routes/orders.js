@@ -64,6 +64,33 @@ async function ORDERS_change(connection, ans, req) {
   });
 }
 
+router.get("/get_by_ts", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  res.json(await ORDERS_get_by_ts(connection, ans, req.query.last_ts));
+});
+
+async function ORDERS_get_by_ts(connection, ans, lts) {
+  return new Promise((resolve) => {
+    connection.query(
+      "select unix_timestamp(lts) as last_ts, order_id, worker_id, client_id, admin_id, order_number, summ, payed, closed, order_works," +
+        " DATE_FORMAT(ts_create, '%Y-%m-%d') as date_ts_create, TIME(ts_create) as time_ts_create," +
+        " DATE_FORMAT(ts_close, '%Y-%m-%d') as date_ts_closed, TIME(ts_close) as time_ts_closed," +
+        " DATE_FORMAT(ts_pay, '%Y-%m-%d') as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders where lts > FROM_UNIXTIME(?);",
+      [lts],
+      (err, res) => {
+        lib.proceed(ans, err, res);
+        resolve(ans);
+      }
+    );
+  });
+}
+
 router.get("/get_all", async function (req, res, next) {
   let ans = {
     status: {
@@ -78,8 +105,8 @@ router.get("/get_all", async function (req, res, next) {
 async function ORDERS_get_all(connection, ans) {
   return new Promise((resolve) => {
     connection.query(
-      "select order_id, worker_id, client_id, admin_id, order_number, summ, payed, closed, order_works," +
-        " DATE_FORMAT(ts_create, '%Y-%m-%d') as date_ts_create, TIME(ts_create) as time_ts_cteate," +
+      "select unix_timestamp(lts) as last_ts, order_id, worker_id, client_id, admin_id, order_number, summ, payed, closed, order_works," +
+        " DATE_FORMAT(ts_create, '%Y-%m-%d') as date_ts_create, TIME(ts_create) as time_ts_create," +
         " DATE_FORMAT(ts_close, '%Y-%m-%d') as date_ts_closed, TIME(ts_close) as time_ts_closed," +
         " DATE_FORMAT(ts_pay, '%Y-%m-%d') as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders;",
       [],
@@ -105,8 +132,8 @@ router.get("/get", async function (req, res, next) {
 async function ORDERS_get(connection, ans, admin_id) {
   return new Promise((resolve) => {
     connection.query(
-      "select order_id, worker_id, client_id, admin_id, order_number, summ, payed, closed, order_works," +
-        " DATE(ts_create) as date_ts_create, TIME(ts_create) as time_ts_cteate," +
+      "select unix_timestamp(lts) as last_ts, order_id, worker_id, client_id, admin_id, order_number, summ, payed, closed, order_works," +
+        " DATE(ts_create) as date_ts_create, TIME(ts_create) as time_ts_create," +
         " DATE(ts_close) as date_ts_closed, TIME(ts_close) as time_ts_closed," +
         " DATE(ts_pay) as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders where admin_id=?;",
       [admin_id],
@@ -221,14 +248,22 @@ async function ORDERS_close_smena(connection, ans) {
     let smena = [];
 
     connection.query(
-      `select client_id, admin_id, worker_id, order_number, summ, payed, closed, order_works, UNIX_TIMESTAMP(lts) as lts, UNIX_TIMESTAMP(ts_create) as ts_create, UNIX_TIMESTAMP(ts_close) as ts_close, UNIX_TIMESTAMP(ts_pay) as ts_pay from orders;`,
+      "select client_id, admin_id, worker_id, order_number, summ, payed, closed, order_works, " +
+        " UNIX_TIMESTAMP(lts) as lts, UNIX_TIMESTAMP(ts_create) as ts_create, UNIX_TIMESTAMP(ts_close) as ts_close, UNIX_TIMESTAMP(ts_pay) as ts_pay " +
+        " from orders where closed='true';",
       [],
       (err, res) => {
+        if (res.length == 0) {
+          resolve(ans);
+          return;
+        }
+
         res.forEach((i) => {
           smena.push(
             `(${i.client_id}, ${i.admin_id}, ${i.worker_id}, ${i.order_number}, ${i.summ}, '${i.payed}', '${i.closed}', '${i.order_works}', FROM_UNIXTIME(${i.lts}), FROM_UNIXTIME(${i.ts_create}), FROM_UNIXTIME(${i.ts_close}), FROM_UNIXTIME(${i.ts_pay}))`
           );
         });
+
         // console.log(smena);
         connection.query(
           `insert into orders_stat (client_id, admin_id, worker_id, order_number, summ, payed, closed, order_works, lts, ts_create, ts_close, ts_pay) values ${smena.join(
@@ -237,7 +272,13 @@ async function ORDERS_close_smena(connection, ans) {
           [],
           (err, res) => {
             lib.proceed(ans, err, res);
-            resolve(ans);
+            connection.query(
+              "delete from orders where closed='true';",
+              [],
+              (err, res) => {
+                resolve(ans);
+              }
+            );
           }
         );
       }
