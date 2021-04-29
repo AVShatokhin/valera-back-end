@@ -129,7 +129,7 @@ router.post("/login", async function (req, res, next) {
 async function USER_login(connection, ans, login, password) {
   return new Promise((resolve) => {
     connection.query(
-      `select user_name, user_id, role from users where login=? and password=? limit 1;`,
+      "select user_name, user_id, role from users where login=? and password=? and active='true' limit 1;",
       [login, password],
       (err, res) => {
         lib.proceed(ans, err, res);
@@ -183,8 +183,62 @@ router.get("/get_all", async function (req, res, next) {
 async function USER_get_all(connection, ans) {
   return new Promise((resolve) => {
     connection.query(
-      `select user_id, user_name, login, password, role from users order by user_id;`,
+      "select user_id, user_name, login, password, role from users where active='true' order by user_id;",
       [],
+      (err, res) => {
+        lib.proceed(ans, err, res);
+        resolve(ans);
+      }
+    );
+  });
+}
+
+router.get("/get", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  res.json(await USER_get(connection, ans, req));
+});
+
+async function USER_get(connection, ans, req) {
+  return new Promise((resolve) => {
+    connection.query(
+      "select user_id, user_name, login, password, role, active from users where user_id=?;",
+      [req.query.user_id],
+      (err, res) => {
+        lib.proceed(ans, err, res);
+        resolve(ans);
+      }
+    );
+  });
+}
+
+router.get("/deactive", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  if (req.query.user_id != undefined) {
+    await USER_deactive(connection, ans, req.query.user_id);
+  } else {
+    ans.status.error = "bad user_id";
+  }
+
+  res.json(ans);
+});
+
+async function USER_deactive(connection, ans, user_id) {
+  return new Promise((resolve) => {
+    connection.query(
+      "update users set active='false' where user_id=? limit 1;",
+      [user_id],
       (err, res) => {
         lib.proceed(ans, err, res);
         resolve(ans);

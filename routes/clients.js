@@ -3,6 +3,36 @@ let connection;
 var router = express.Router();
 var lib = require("../libs/valera.js");
 
+router.get("/deactive", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  if (req.query.client_id != undefined) {
+    await CLIENT_deactive(connection, ans, req.query.client_id);
+  } else {
+    ans.status.error = "bad client_id";
+  }
+
+  res.json(ans);
+});
+
+async function CLIENT_deactive(connection, ans, client_id) {
+  return new Promise((resolve) => {
+    connection.query(
+      "update clients set active='false' where client_id=? limit 1;",
+      [client_id],
+      (err, res) => {
+        lib.proceed(ans, err, res);
+        resolve(ans);
+      }
+    );
+  });
+}
+
 router.post("/create", async function (req, res, next) {
   let ans = {
     status: {
@@ -12,60 +42,6 @@ router.post("/create", async function (req, res, next) {
   };
 
   res.json(await CLIENT_create(connection, ans, req));
-});
-
-router.post("/change", async function (req, res, next) {
-  let ans = {
-    status: {
-      success: false,
-    },
-    data: [],
-  };
-
-  res.json(await CLIENT_change(connection, ans, req));
-});
-
-router.get("/delete", async function (req, res, next) {
-  let ans = {
-    status: {
-      success: false,
-    },
-    data: [],
-  };
-
-  if (req.query.client_id != undefined) {
-    await CLIENT_delete(connection, ans, req.query.client_id);
-  } else {
-    ans.status.error = "bad client_id";
-  }
-
-  res.json(ans);
-});
-
-function setConnection(conn) {
-  connection = conn;
-}
-
-router.get("/get_all", async function (req, res, next) {
-  let ans = {
-    status: {
-      success: false,
-    },
-    data: [],
-  };
-
-  res.json(await CLIENT_get_all(connection, ans));
-});
-
-router.get("/get", async function (req, res, next) {
-  let ans = {
-    status: {
-      success: false,
-    },
-    data: [],
-  };
-
-  res.json(await CLIENT_get(connection, ans, req));
 });
 
 async function CLIENT_create(connection, ans, req) {
@@ -86,6 +62,17 @@ async function CLIENT_create(connection, ans, req) {
   });
 }
 
+router.post("/change", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  res.json(await CLIENT_change(connection, ans, req));
+});
+
 async function CLIENT_change(connection, ans, req) {
   return new Promise((resolve) => {
     connection.query(
@@ -105,6 +92,23 @@ async function CLIENT_change(connection, ans, req) {
   });
 }
 
+router.get("/delete", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  if (req.query.client_id != undefined) {
+    await CLIENT_delete(connection, ans, req.query.client_id);
+  } else {
+    ans.status.error = "bad client_id";
+  }
+
+  res.json(ans);
+});
+
 async function CLIENT_delete(connection, ans, client_id) {
   return new Promise((resolve) => {
     connection.query(
@@ -118,10 +122,21 @@ async function CLIENT_delete(connection, ans, client_id) {
   });
 }
 
+router.get("/get_all", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  res.json(await CLIENT_get_all(connection, ans));
+});
+
 async function CLIENT_get_all(connection, ans) {
   return new Promise((resolve) => {
     connection.query(
-      `select client_id, cars, discount, name, phone from clients order by client_id;`,
+      "select client_id, cars, discount, name, phone from clients where active='true' order by client_id;",
       [],
       (err, res) => {
         lib.proceed(ans, err, res);
@@ -130,6 +145,17 @@ async function CLIENT_get_all(connection, ans) {
     );
   });
 }
+
+router.get("/get", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  res.json(await CLIENT_get(connection, ans, req));
+});
 
 async function CLIENT_get(connection, ans, req) {
   let phone = "";
@@ -163,6 +189,10 @@ async function CLIENT_get(connection, ans, req) {
       );
     });
   }
+}
+
+function setConnection(conn) {
+  connection = conn;
 }
 
 module.exports = router;
