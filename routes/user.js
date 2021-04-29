@@ -169,6 +169,30 @@ async function USER_delete(connection, ans, user_id) {
   });
 }
 
+router.get("/get_all", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  res.json(await USER_get_all(connection, ans));
+});
+
+async function USER_get_all(connection, ans) {
+  return new Promise((resolve) => {
+    connection.query(
+      `select user_id, user_name, login, password, role from users order by user_id;`,
+      [],
+      (err, res) => {
+        lib.proceed(ans, err, res);
+        resolve(ans);
+      }
+    );
+  });
+}
+
 function setConnection(conn) {
   connection = conn;
 }
