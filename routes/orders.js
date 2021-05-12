@@ -17,13 +17,14 @@ router.post("/create", async function (req, res, next) {
 async function ORDERS_create(connection, ans, req) {
   return new Promise((resolve) => {
     connection.query(
-      "insert into orders set admin_id=?, client_id=?, worker_id=?, order_number=?, order_works=?, ts_create=now();",
+      "insert into orders set admin_id=?, client_id=?, worker_id=?, order_number=?, order_works=?, summ=?, ts_create=now();",
       [
         req.body.admin_id,
         req.body.client_id,
         req.body.worker_id,
         req.body.order_number,
         JSON.stringify(req.body.order_works),
+        req.body.summ,
       ],
       (err, res) => {
         lib.proceed(ans, err, res);
@@ -47,13 +48,14 @@ router.post("/change", async function (req, res, next) {
 async function ORDERS_change(connection, ans, req) {
   return new Promise((resolve) => {
     connection.query(
-      "update orders set admin_id=?, client_id=?, worker_id=?, order_number=?, order_works=? where order_id=?",
+      "update orders set admin_id=?, client_id=?, worker_id=?, order_number=?, order_works=?, summ=? where order_id=?",
       [
         req.body.admin_id,
         req.body.client_id,
         req.body.worker_id,
         req.body.order_number,
         JSON.stringify(req.body.order_works),
+        req.body.summ,
         req.body.order_id,
       ],
       (err, res) => {
@@ -84,6 +86,10 @@ async function ORDERS_get_by_ts(connection, ans, lts) {
         " DATE_FORMAT(ts_pay, '%Y-%m-%d') as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders where lts > FROM_UNIXTIME(?);",
       [lts],
       (err, res) => {
+        res.forEach((element) => {
+          element.order_works = JSON.parse(element.order_works);
+        });
+
         lib.proceed(ans, err, res);
         resolve(ans);
       }
@@ -111,6 +117,10 @@ async function ORDERS_get_all(connection, ans) {
         " DATE_FORMAT(ts_pay, '%Y-%m-%d') as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders;",
       [],
       (err, res) => {
+        res.forEach((element) => {
+          element.order_works = JSON.parse(element.order_works);
+        });
+
         lib.proceed(ans, err, res);
         resolve(ans);
       }
@@ -138,6 +148,10 @@ async function ORDERS_get(connection, ans, admin_id) {
         " DATE(ts_pay) as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders where admin_id=?;",
       [admin_id],
       (err, res) => {
+        res.forEach((element) => {
+          element.order_works = JSON.parse(element.order_works);
+        });
+
         lib.proceed(ans, err, res);
         resolve(ans);
       }

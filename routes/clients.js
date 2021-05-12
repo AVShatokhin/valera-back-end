@@ -139,6 +139,10 @@ async function CLIENT_get_all(connection, ans) {
       "select client_id, cars, discount, name, phone from clients where active='true' order by client_id;",
       [],
       (err, res) => {
+        res.forEach((element) => {
+          element.cars = JSON.parse(element.cars);
+        });
+
         lib.proceed(ans, err, res);
         resolve(ans);
       }
@@ -164,31 +168,57 @@ async function CLIENT_get(connection, ans, req) {
 
   // select * from clients where JSON_EXTRACT(cars, '$.a250ps') is not null;
 
-  if (req.query.car_num != undefined) {
-    let car_num = req.query.car_num;
-    // console.log(car_num);
+  if (req.query.client_id != undefined) {
+    let client_id = req.query.client_id;
     return new Promise((resolve) => {
       connection.query(
-        `select client_id, cars, discount, name, phone from clients where (JSON_EXTRACT(cars, '$.${car_num}') is not null) and (phone like ?) order by client_id;`,
-        [`%${phone}%`],
+        `select client_id, cars, discount, name, phone, active from clients where client_id = ?;`,
+        [client_id],
         (err, res) => {
-          lib.proceed(ans, err, res);
-          resolve(ans);
-        }
-      );
-    });
-  } else {
-    return new Promise((resolve) => {
-      connection.query(
-        "select client_id, cars, discount, name, phone from clients where phone like ? order by client_id;",
-        [`%${phone}%`],
-        (err, res) => {
+          res.forEach((element) => {
+            element.cars = JSON.parse(element.cars);
+          });
           lib.proceed(ans, err, res);
           resolve(ans);
         }
       );
     });
   }
+
+  if (req.query.car_num != undefined) {
+    let car_num = req.query.car_num;
+    // console.log(car_num);
+    return new Promise((resolve) => {
+      connection.query(
+        // `select client_id, cars, discount, name, phone, active from clients where (JSON_EXTRACT(cars, '$.${car_num}') is not null) and (phone like ?) order by client_id;`,
+        // [`%${phone}%`],
+        'select client_id, cars, discount, name, phone, active from clients where (cars like ?) and (phone like ?) and active="true" order by client_id;',
+        [`%${car_num}%`, `%${phone}%`],
+        (err, res) => {
+          res.forEach((element) => {
+            element.cars = JSON.parse(element.cars);
+          });
+
+          lib.proceed(ans, err, res);
+          resolve(ans);
+        }
+      );
+    });
+  }
+
+  return new Promise((resolve) => {
+    connection.query(
+      'select client_id, cars, discount, name, phone, active from clients where (phone like ?) and active="true" order by client_id;',
+      [`%${phone}%`],
+      (err, res) => {
+        res.forEach((element) => {
+          element.cars = JSON.parse(element.cars);
+        });
+        lib.proceed(ans, err, res);
+        resolve(ans);
+      }
+    );
+  });
 }
 
 function setConnection(conn) {
