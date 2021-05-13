@@ -139,9 +139,10 @@ async function CLIENT_get_all(connection, ans) {
       "select client_id, cars, discount, name, phone from clients where active='true' order by client_id;",
       [],
       (err, res) => {
-        res.forEach((element) => {
-          element.cars = JSON.parse(element.cars);
-        });
+        if (res != undefined)
+          res.forEach((element) => {
+            element.cars = JSON.parse(element.cars);
+          });
 
         lib.proceed(ans, err, res);
         resolve(ans);
@@ -175,9 +176,10 @@ async function CLIENT_get(connection, ans, req) {
         `select client_id, cars, discount, name, phone, active from clients where client_id = ?;`,
         [client_id],
         (err, res) => {
-          res.forEach((element) => {
-            element.cars = JSON.parse(element.cars);
-          });
+          if (res != undefined)
+            res.forEach((element) => {
+              element.cars = JSON.parse(element.cars);
+            });
           lib.proceed(ans, err, res);
           resolve(ans);
         }
@@ -195,9 +197,10 @@ async function CLIENT_get(connection, ans, req) {
         'select client_id, cars, discount, name, phone, active from clients where (cars like ?) and (phone like ?) and active="true" order by client_id;',
         [`%${car_num}%`, `%${phone}%`],
         (err, res) => {
-          res.forEach((element) => {
-            element.cars = JSON.parse(element.cars);
-          });
+          if (res != undefined)
+            res.forEach((element) => {
+              element.cars = JSON.parse(element.cars);
+            });
 
           lib.proceed(ans, err, res);
           resolve(ans);
@@ -211,9 +214,10 @@ async function CLIENT_get(connection, ans, req) {
       'select client_id, cars, discount, name, phone, active from clients where (phone like ?) and active="true" order by client_id;',
       [`%${phone}%`],
       (err, res) => {
-        res.forEach((element) => {
-          element.cars = JSON.parse(element.cars);
-        });
+        if (res != undefined)
+          res.forEach((element) => {
+            element.cars = JSON.parse(element.cars);
+          });
         lib.proceed(ans, err, res);
         resolve(ans);
       }
