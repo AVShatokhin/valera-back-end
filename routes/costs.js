@@ -57,11 +57,14 @@ router.post("/set_all_wheels", async function (req, res, next) {
 async function COSTS_set_all_wheels(connection, ans, req) {
   return new Promise((resolve) => {
     let sql = [];
-    for (cost_id in req.body) {
+
+    req.body.forEach((e) => {
       sql.push(
-        `(${cost_id}, ${req.body[cost_id].radius}, ${req.body[cost_id].profile}, ${req.body[cost_id].runflat}, ${req.body[cost_id].cost})`
+        `(${e.cost_id}, ${e.radius}, ${e.profile}, ${e.runflat}, ${e.cost})`
       );
-    }
+    });
+
+    // `(${e.cost_id}, ${req.body[cost_id].radius}, ${req.body[cost_id].profile}, ${req.body[cost_id].runflat}, ${req.body[cost_id].cost})`
 
     connection.query(
       `replace costs_wheels (cost_id, radius, profile, runflat, cost) values ${sql.join(
@@ -118,10 +121,6 @@ router.get("/get_all_wheels", async function (req, res, next) {
   res.json(await COSTS_get_all_wheels(connection, ans));
 });
 
-function setConnection(conn) {
-  connection = conn;
-}
-
 async function COSTS_get_all_wheels(connection, ans) {
   return new Promise((resolve) => {
     connection.query(
@@ -146,10 +145,6 @@ router.get("/get_all", async function (req, res, next) {
   res.json(await COSTS_get_all(connection, ans));
 });
 
-function setConnection(conn) {
-  connection = conn;
-}
-
 async function COSTS_get_all(connection, ans) {
   return new Promise((resolve) => {
     connection.query(
@@ -161,6 +156,10 @@ async function COSTS_get_all(connection, ans) {
       }
     );
   });
+}
+
+function setConnection(conn) {
+  connection = conn;
 }
 
 module.exports = router;
