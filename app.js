@@ -13,6 +13,13 @@ var CLIENTS_endPoints = require("./routes/clients");
 var WORKERS_endPoints = require("./routes/workers");
 var ORDERS_endPoints = require("./routes/orders");
 
+// let fs = require("fs");
+// let __rawdata = fs.readFileSync("./config/costs2.csv").toString().split("\r\n");
+// console.log(JSON.stringify(__rawdata));
+
+
+
+
 var app = express();
 
 // view engine setup
