@@ -3,7 +3,6 @@ let connection;
 var router = express.Router();
 var lib = require("../libs/valera.js");
 
-
 router.get("/drop_main", async function (req, res, next) {
   let ans = {
     status: {
@@ -37,55 +36,54 @@ router.post("/set_main_costs", async function (req, res, next) {
 
 async function COSTS_set_main_costs(connection, ans, req) {
   let __rawdata = req.body;
-  let costs = { };
+  let costs = {};
   let header = [];
-  
+
   let __header = __rawdata[0].split(";");
   let __offset = 6;
-  
-  for (let i = __offset; i < __header.length ; i++) {
+
+  for (let i = __offset; i < __header.length; i++) {
     header.push(__header[i]);
   }
-  
-  for (let i=1; i < __rawdata.length; i++) {
+
+  for (let i = 1; i < __rawdata.length; i++) {
     let __line = __rawdata[i].split(";");
     if (__line.length < __offset) continue;
-  
+
     let __super_group_name = __line[1];
     let __group_name = __line[4];
     let __service_name = __line[5];
     let __stavka_admin = __line[2];
     let __stavka_worker = __line[3];
-  
+
     if (costs[__super_group_name] == undefined) {
-      costs[__super_group_name] = { };
+      costs[__super_group_name] = {};
     }
-  
+
     if (costs[__super_group_name][__group_name] == undefined) {
-        costs[__super_group_name][__group_name] = { }
-    } 
-  
-    if (costs[__super_group_name][__group_name][__service_name] == undefined) {
-      costs[__super_group_name][__group_name][__service_name] = []
+      costs[__super_group_name][__group_name] = {};
     }
-  
+
+    if (costs[__super_group_name][__group_name][__service_name] == undefined) {
+      costs[__super_group_name][__group_name][__service_name] = [];
+    }
+
     let __sub_services = [];
-  
-    for (let i=0; i < header.length; i++) {
-      if (__line[i + __offset] != '') {
-        __sub_services.push(
-          { 
-            name : header[i], 
-            cost : __line[i + __offset], 
-            stavka_admin : __stavka_admin, 
-            stavka_worker : __stavka_worker
-          });
+
+    for (let i = 0; i < header.length; i++) {
+      if (__line[i + __offset] != "") {
+        __sub_services.push({
+          name: header[i],
+          cost: __line[i + __offset],
+          stavka_admin: __stavka_admin,
+          stavka_worker: __stavka_worker,
+        });
       }
     }
-  
+
     costs[__super_group_name][__group_name][__service_name] = __sub_services;
   }
-  
+
   return new Promise((resolve) => {
     connection.query(
       `replace costs_main (record_id, costs) values (?, ?);`,
@@ -94,8 +92,8 @@ async function COSTS_set_main_costs(connection, ans, req) {
         lib.proceed(ans, err, res);
         resolve(ans);
       }
-    ); 
-  }); 
+    );
+  });
 }
 
 router.get("/get_main_costs", async function (req, res, next) {
@@ -115,13 +113,13 @@ async function COSTS_get_main_costs(connection, ans) {
       `select costs from costs_main where record_id=1;`,
       [],
       (err, res) => {
+        res[0].costs = JSON.parse(res[0].costs);
         lib.proceed(ans, err, res);
         resolve(ans);
       }
     );
   });
 }
-
 
 ////// старое =================================================
 
