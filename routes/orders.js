@@ -388,7 +388,7 @@ async function ORDERS_close_smena(connection, ans, admin_id) {
         " from orders where closed='true' and admin_id=?;",
       [admin_id],
       (err, res) => {
-        console.log(err);
+        // console.log(err);
 
         if (res == undefined) {
           ans.data = ["res = undefined"];

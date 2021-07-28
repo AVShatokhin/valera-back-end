@@ -3,6 +3,12 @@ let connection;
 var router = express.Router();
 var lib = require("../libs/valera.js");
 
+// let fs = require("fs");
+// let rawdata = JSON.stringify(
+//   fs.readFileSync("./config/costs2.csv").toString().split("\r\n")
+// );
+// console.log(rawdata);
+
 router.get("/drop_main", async function (req, res, next) {
   let ans = {
     status: {
@@ -40,7 +46,7 @@ async function COSTS_set_main_costs(connection, ans, req) {
   let header = [];
 
   let __header = __rawdata[0].split(";");
-  let __offset = 6;
+  let __offset = 7;
 
   for (let i = __offset; i < __header.length; i++) {
     header.push(__header[i]);
@@ -55,6 +61,7 @@ async function COSTS_set_main_costs(connection, ans, req) {
     let __service_name = __line[5];
     let __stavka_admin = __line[2];
     let __stavka_worker = __line[3];
+    let __normo_min = __line[6];
 
     if (costs[__super_group_name] == undefined) {
       costs[__super_group_name] = {};
@@ -77,12 +84,15 @@ async function COSTS_set_main_costs(connection, ans, req) {
           cost: __line[i + __offset],
           stavka_admin: __stavka_admin,
           stavka_worker: __stavka_worker,
+          normo_min: __normo_min,
         });
       }
     }
 
     costs[__super_group_name][__group_name][__service_name] = __sub_services;
   }
+
+  // console.log(costs);
 
   return new Promise((resolve) => {
     connection.query(
