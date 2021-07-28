@@ -61,7 +61,7 @@ router.get("/get_income_stats", async function (req, res, next) {
     });
   }
   ans.data = __smenas;
-  console.log(ans);
+  // console.log(ans);
   res.json(ans);
 });
 
