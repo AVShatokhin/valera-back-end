@@ -69,7 +69,7 @@ async function GET_orders_stat(connection, req) {
   return new Promise((resolve) => {
     connection.query(
       "select admin_id, carName, carNum, client_id, closed, lts, order_number, order_works, payed, pay_type, smena_id, ts_close, ts_create," +
-        "unix_timestamp(ts_create) - unix_timestamp(ts_create) as ts_delta," +
+        "unix_timestamp(ts_close) - unix_timestamp(ts_create) as ts_delta," +
         "ts_pay, worker_id from orders_stat where date(ts_create) >= ? and date(ts_close) <= ? and (admin_id=? or ?) and (worker_id=? or ?);",
       [
         req.query.date_from,
