@@ -28,7 +28,7 @@ router.get("/get_income_stats", async function (req, res, next) {
       __smenas[order.smena_id].orders.push(order);
       if (order.order_works?.length > 0) {
         order.order_works.forEach((work) => {
-          if (work?.cost > 0) {
+          if ((work?.cost > 0) & (work?.count > 0)) {
             if (
               __smenas[order.smena_id].admins_salary[order.admin_id] ==
               undefined
@@ -41,16 +41,16 @@ router.get("/get_income_stats", async function (req, res, next) {
               __smenas[order.smena_id].workers_salary[order.worker_id] = 0;
 
             __smenas[order.smena_id].admins_salary[order.admin_id] +=
-              Math.round((work.stavka_admin / 100) * work.cost);
+              Math.round((work.stavka_admin / 100) * work.cost * work.count);
             __smenas[order.smena_id].workers_salary[order.worker_id] +=
-              Math.round((work.stavka_worker / 100) * work.cost);
+              Math.round((work.stavka_worker / 100) * work.cost * work.count);
 
             switch (order.pay_type) {
               case "nal":
-                __smenas[order.smena_id].income_nal += work.cost;
+                __smenas[order.smena_id].income_nal += work.cost * work.count;
                 break;
               case "eq":
-                __smenas[order.smena_id].income_eq += work.cost;
+                __smenas[order.smena_id].income_eq += work.cost * work.count;
                 break;
               default:
                 break;
@@ -61,7 +61,7 @@ router.get("/get_income_stats", async function (req, res, next) {
     });
   }
   ans.data = __smenas;
-  // console.log(ans);
+  console.log(ans);
   res.json(ans);
 });
 
