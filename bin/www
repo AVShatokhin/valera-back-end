@@ -30,7 +30,7 @@ app.set("port", port);
  */
 
 var server = http.createServer(app);
-var serverHTTPS = http.createServer(credentials, app);
+var serverHTTPS = https.createServer(credentials, app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -95,6 +95,7 @@ function onError(error) {
  */
 
 function onListening() {
+  console.log("started");
   var addr = server.address();
   var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
   debug("Listening on " + bind);
