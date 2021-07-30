@@ -1,0 +1,4 @@
+docker stop auto-db
+docker rm auto-db
+docker run -it -d -e MYSQL_ROOT_PASSWORD=13454678qwerty -v /home/webmaster/db/:/var/lib/mysql -v /home/webmaster/db-etc/:/etc/mysql/conf.d -p 3306:3306 --name auto-db mariadb:10
+
