@@ -7,8 +7,13 @@
 var app = require("../app");
 var debug = require("debug")("valera-back-end:server");
 var http = require("http");
+var https = require("https");
 var conf = require("nconf").argv().env().file({ file: "./config/config.json" });
 
+var fs = require("fs");
+var privateKey = fs.readFileSync("ssl/server.key", "utf8");
+var certificate = fs.readFileSync("ssl/server.crt", "utf8");
+var credentials = { key: privateKey, cert: certificate };
 /**
  * Get port from environment and store in Express.
  */
@@ -23,6 +28,7 @@ app.set("port", port);
  */
 
 var server = http.createServer(app);
+var serverHTTPS = http.createServer(credentials, app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -32,6 +38,9 @@ server.listen(port);
 server.on("error", onError);
 server.on("listening", onListening);
 
+serverHTTPS.listen(443);
+serverHTTPS.on("error", onError);
+serverHTTPS.on("listening", onListening);
 /**
  * Normalize a port into a number, string, or false.
  */
