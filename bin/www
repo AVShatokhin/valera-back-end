@@ -13,7 +13,9 @@ var conf = require("nconf").argv().env().file({ file: "./config/config.json" });
 var fs = require("fs");
 var privateKey = fs.readFileSync("ssl/server.key", "utf8");
 var certificate = fs.readFileSync("ssl/server.crt", "utf8");
-var credentials = { key: privateKey, cert: certificate };
+var ca = fs.readFileSync("ssl/server.crtca", "utf8");
+
+var credentials = { key: privateKey, cert: certificate, ca };
 /**
  * Get port from environment and store in Express.
  */
@@ -66,6 +68,7 @@ function normalizePort(val) {
  */
 
 function onError(error) {
+  console.log(error);
   if (error.syscall !== "listen") {
     throw error;
   }
