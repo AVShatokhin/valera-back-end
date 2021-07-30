@@ -3,4 +3,4 @@ docker stop valera-back-end
 docker rm valera-back-end
 
 docker run -it -d --restart=always --name valera-back-end -v /home/webmaster/valera-back-end/:/home/webmaster/valera-back-end/ \
-					   -w /home/webmaster/valera-back-end/ -p 3000:3000 node:14.16.1 node bin/www
+					   -w /home/webmaster/valera-back-end/ -p 3000:3000 -p 443:443 node:14.16.1 node bin/www
