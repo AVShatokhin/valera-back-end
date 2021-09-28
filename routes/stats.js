@@ -7,7 +7,7 @@ var lib = require("../libs/valera.js");
 router.get("/get_income_stats", async function (req, res, next) {
   let ans = {
     status: {
-      success: false,
+      success: true,
     },
     data: [],
   };
