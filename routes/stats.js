@@ -12,8 +12,8 @@ router.get("/get_income_stats", async function (req, res, next) {
     data: [],
   };
 
-  let __admin_id = req.query.admin_id;
-  let __worker_id = req.query.worker_id;
+  // let __admin_id = req.query.admin_id;
+  // let __worker_id = req.query.worker_id;
 
   // req.query.date_from = "2021-07-21";
   // req.query.date_to = "2021-07-22";
@@ -22,6 +22,9 @@ router.get("/get_income_stats", async function (req, res, next) {
   // let __admins = await GET_admins(connection);
   let __smenas = await GET_smena(connection, req);
   let __orders = await GET_orders_stat(connection, req);
+
+  // console.log(__smenas);
+  // console.log(__orders);
 
   if (__orders.length > 0) {
     __orders.forEach((order) => {
@@ -80,7 +83,8 @@ async function GET_orders_stat(connection, req) {
         req.query.worker_id == undefined,
       ],
       (err, res) => {
-        // console.log(err);
+        console.log(err);
+        console.log(res);
         res.forEach((work) => {
           work.order_works = JSON.parse(work.order_works);
         });
@@ -96,6 +100,8 @@ async function GET_smena(connection, req) {
       "select admin_id, open_ts, close_ts, smena_id from smena where date(open_ts) >= ? and date(close_ts) <= ?;",
       [req.query.date_from, req.query.date_to],
       (err, res) => {
+        console.log(err);
+        console.log(res);
         let __res = {};
         res.forEach((element) => {
           __res[element.smena_id] = {
