@@ -26,40 +26,45 @@ router.get("/get_income_stats", async function (req, res, next) {
   // console.log(__smenas);
   // console.log(__orders);
 
+  // res.json(ans);
+  // return;
+
   if (__orders.length > 0) {
     __orders.forEach((order) => {
-      __smenas[order.smena_id].orders.push(order);
-      if (order.order_works?.length > 0) {
-        order.order_works.forEach((work) => {
-          if ((work?.cost > 0) & (work?.count > 0)) {
-            if (
-              __smenas[order.smena_id].admins_salary[order.admin_id] ==
-              undefined
-            )
-              __smenas[order.smena_id].admins_salary[order.admin_id] = 0;
-            if (
-              __smenas[order.smena_id].workers_salary[order.worker_id] ==
-              undefined
-            )
-              __smenas[order.smena_id].workers_salary[order.worker_id] = 0;
+      if (__smenas?.[order?.smena_id] != null) {
+        __smenas[order.smena_id].orders.push(order);
+        if (order.order_works?.length > 0) {
+          order.order_works.forEach((work) => {
+            if ((work?.cost > 0) & (work?.count > 0)) {
+              if (
+                __smenas[order.smena_id].admins_salary[order.admin_id] ==
+                undefined
+              )
+                __smenas[order.smena_id].admins_salary[order.admin_id] = 0;
+              if (
+                __smenas[order.smena_id].workers_salary[order.worker_id] ==
+                undefined
+              )
+                __smenas[order.smena_id].workers_salary[order.worker_id] = 0;
 
-            __smenas[order.smena_id].admins_salary[order.admin_id] +=
-              Math.round((work.stavka_admin / 100) * work.cost * work.count);
-            __smenas[order.smena_id].workers_salary[order.worker_id] +=
-              Math.round((work.stavka_worker / 100) * work.cost * work.count);
+              __smenas[order.smena_id].admins_salary[order.admin_id] +=
+                Math.round((work.stavka_admin / 100) * work.cost * work.count);
+              __smenas[order.smena_id].workers_salary[order.worker_id] +=
+                Math.round((work.stavka_worker / 100) * work.cost * work.count);
 
-            switch (order.pay_type) {
-              case "nal":
-                __smenas[order.smena_id].income_nal += work.cost * work.count;
-                break;
-              case "eq":
-                __smenas[order.smena_id].income_eq += work.cost * work.count;
-                break;
-              default:
-                break;
+              switch (order.pay_type) {
+                case "nal":
+                  __smenas[order.smena_id].income_nal += work.cost * work.count;
+                  break;
+                case "eq":
+                  __smenas[order.smena_id].income_eq += work.cost * work.count;
+                  break;
+                default:
+                  break;
+              }
             }
-          }
-        });
+          });
+        }
       }
     });
   }
@@ -83,8 +88,8 @@ async function GET_orders_stat(connection, req) {
         req.query.worker_id == undefined,
       ],
       (err, res) => {
-        console.log(err);
-        console.log(res);
+        // console.log(err);
+        // console.log(res);
         res.forEach((work) => {
           work.order_works = JSON.parse(work.order_works);
         });
@@ -100,8 +105,8 @@ async function GET_smena(connection, req) {
       "select admin_id, open_ts, close_ts, smena_id from smena where date(open_ts) >= ? and date(close_ts) <= ?;",
       [req.query.date_from, req.query.date_to],
       (err, res) => {
-        console.log(err);
-        console.log(res);
+        // console.log(err);
+        // console.log(res);
         let __res = {};
         res.forEach((element) => {
           __res[element.smena_id] = {
