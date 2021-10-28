@@ -123,7 +123,11 @@ async function COSTS_get_main_costs(connection, ans) {
       `select costs from costs_main where record_id=1;`,
       [],
       (err, res) => {
-        res[0].costs = JSON.parse(res[0].costs);
+        if (res[0]?.costs != null) {
+          res[0].costs = JSON.parse(res[0].costs);
+        } else {
+          res[0].costs = {};
+        }
         lib.proceed(ans, err, res);
         resolve(ans);
       }
