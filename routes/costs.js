@@ -124,7 +124,7 @@ async function COSTS_get_main_costs(connection, ans) {
       [],
       (err, res) => {
         if (res.length == 0) {
-          res[0].costs = {};
+          res = [{}];
         }
 
         if (res[0]?.costs != null) {
