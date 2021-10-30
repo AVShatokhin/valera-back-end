@@ -310,7 +310,16 @@ router.get("/close", async function (req, res, next) {
   };
 
   if (req.query.order_id != undefined) {
-    await ORDERS_close(connection, ans, req.query.order_id);
+    if (req.query.force == "yes") {
+      await ORDERS_close_force(
+        connection,
+        ans,
+        req.query.force_comment,
+        req.query.order_id
+      );
+    } else {
+      await ORDERS_close(connection, ans, req.query.order_id);
+    }
   } else {
     ans.status.error = "bad order_id";
   }
@@ -322,6 +331,19 @@ async function ORDERS_close(connection, ans, order_id) {
     connection.query(
       'update orders set ts_close=now(), closed="true" where order_id=? and payed="true" limit 1;',
       [order_id],
+      (err, res) => {
+        lib.proceed(ans, err, res);
+        resolve(ans);
+      }
+    );
+  });
+}
+
+async function ORDERS_close_force(connection, ans, force_comment, order_id) {
+  return new Promise((resolve) => {
+    connection.query(
+      'update orders set ts_close=now(), closed="true", force_closed="yes", force_comment=? where order_id=? limit 1;',
+      [force_comment, order_id],
       (err, res) => {
         lib.proceed(ans, err, res);
         resolve(ans);
@@ -384,7 +406,8 @@ async function ORDERS_close_smena(connection, ans, admin_id) {
 
     connection.query(
       "select pay_type, smena_id, client_id, admin_id, worker_id, order_number, payed, closed, order_works, carName, carNum, " +
-        " UNIX_TIMESTAMP(lts) as lts, UNIX_TIMESTAMP(ts_create) as ts_create, UNIX_TIMESTAMP(ts_close) as ts_close, UNIX_TIMESTAMP(ts_pay) as ts_pay " +
+        " UNIX_TIMESTAMP(lts) as lts, UNIX_TIMESTAMP(ts_create) as ts_create, UNIX_TIMESTAMP(ts_close) as ts_close, UNIX_TIMESTAMP(ts_pay) as ts_pay, " +
+        " force_closed, force_comment " +
         " from orders where closed='true' and admin_id=?;",
       [admin_id],
       (err, res) => {
@@ -404,14 +427,14 @@ async function ORDERS_close_smena(connection, ans, admin_id) {
 
         res.forEach((i) => {
           smena.push(
-            `('${i.pay_type}', ${i.smena_id}, ${i.client_id}, ${i.admin_id}, ${i.worker_id}, ${i.order_number}, '${i.payed}', '${i.closed}', '${i.order_works}', '${i.carName}', '${i.carNum}', FROM_UNIXTIME(${i.lts}), FROM_UNIXTIME(${i.ts_create}), FROM_UNIXTIME(${i.ts_close}), FROM_UNIXTIME(${i.ts_pay}))`
+            `('${i.pay_type}', ${i.smena_id}, ${i.client_id}, ${i.admin_id}, ${i.worker_id}, ${i.order_number}, '${i.payed}', '${i.closed}', '${i.order_works}', '${i.carName}', '${i.carNum}', FROM_UNIXTIME(${i.lts}), FROM_UNIXTIME(${i.ts_create}), FROM_UNIXTIME(${i.ts_close}), FROM_UNIXTIME(${i.ts_pay}), '${i.force_closed}', '${i.force_comment}')`
           );
           // console.log(i);
         });
 
         // console.log(smena);
         connection.query(
-          `insert into orders_stat (pay_type, smena_id, client_id, admin_id, worker_id, order_number, payed, closed, order_works, carName, carNum, lts, ts_create, ts_close, ts_pay) values ${smena.join(
+          `insert into orders_stat (pay_type, smena_id, client_id, admin_id, worker_id, order_number, payed, closed, order_works, carName, carNum, lts, ts_create, ts_close, ts_pay, force_closed, force_comment) values ${smena.join(
             ","
           )};`,
           [],
@@ -421,6 +444,7 @@ async function ORDERS_close_smena(connection, ans, admin_id) {
               "delete from orders where closed='true';",
               [],
               (err, res) => {
+                ans.status.success = true;
                 resolve(ans);
               }
             );
