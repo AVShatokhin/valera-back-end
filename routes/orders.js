@@ -24,26 +24,6 @@ router.get("/open_smena", async function (req, res, next) {
   res.json(ans);
 });
 
-router.get("/get_smena", async function (req, res, next) {
-  let ans = {
-    status: {
-      success: false,
-    },
-    data: [],
-  };
-
-  let smena_info = await GET_SMENA(connection, req.query.admin_id);
-
-  if (smena_info.length == 0) {
-    await OPEN_SMENA(connection, ans, req);
-  } else {
-    ans.status.success = false;
-    ans.data = ["smena is opened"];
-  }
-
-  res.json(ans);
-});
-
 async function OPEN_SMENA(connection, ans, req) {
   return new Promise((resolve) => {
     connection.query(
@@ -56,6 +36,27 @@ async function OPEN_SMENA(connection, ans, req) {
     );
   });
 }
+
+router.get("/get_smena", async function (req, res, next) {
+  let ans = {
+    status: {
+      success: false,
+    },
+    data: [],
+  };
+
+  let smena_info = await GET_SMENA(connection, req.query.admin_id);
+
+  if (smena_info.length == 0) {
+    ans.status.success = false;
+    ans.data = ["smena is closed"];
+  } else {
+    ans.status.success = true;
+    ans.data = smena_info;
+  }
+
+  res.json(ans);
+});
 
 async function GET_SMENA(connection, admin_id) {
   return new Promise((resolve) => {
@@ -161,6 +162,7 @@ async function ORDERS_get_by_ts(connection, ans, lts) {
       "select pay_type, smena_id, unix_timestamp(lts) as last_ts, order_id, worker_id, client_id, admin_id, order_number, payed, closed, order_works, carName, carNum, " +
         " DATE_FORMAT(ts_create, '%Y-%m-%d') as date_ts_create, TIME(ts_create) as time_ts_create," +
         " DATE_FORMAT(ts_close, '%Y-%m-%d') as date_ts_closed, TIME(ts_close) as time_ts_closed," +
+        " force_closed, force_comment, " +
         " DATE_FORMAT(ts_pay, '%Y-%m-%d') as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders where lts > FROM_UNIXTIME(?);",
       [lts],
       (err, res) => {
@@ -193,7 +195,9 @@ async function ORDERS_get_all(connection, ans) {
       "select pay_type, smena_id, unix_timestamp(lts) as last_ts, order_id, worker_id, client_id, admin_id, order_number, payed, closed, order_works, carName, carNum, " +
         " DATE_FORMAT(ts_create, '%Y-%m-%d') as date_ts_create, TIME(ts_create) as time_ts_create," +
         " DATE_FORMAT(ts_close, '%Y-%m-%d') as date_ts_closed, TIME(ts_close) as time_ts_closed," +
-        " DATE_FORMAT(ts_pay, '%Y-%m-%d') as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders;",
+        " DATE_FORMAT(ts_pay, '%Y-%m-%d') as date_ts_payed, TIME(ts_pay) as time_ts_payed, " +
+        " force_closed, force_comment " +
+        " from orders;",
       [],
       (err, res) => {
         if (res != undefined)
@@ -223,8 +227,9 @@ async function ORDERS_get(connection, ans, admin_id) {
   return new Promise((resolve) => {
     connection.query(
       "select pay_type, smena_id, unix_timestamp(lts) as last_ts, order_id, worker_id, client_id, admin_id, order_number, payed, closed, order_works, carName, carNum, " +
-        " DATE(ts_create) as date_ts_create, TIME(ts_create) as time_ts_create," +
-        " DATE(ts_close) as date_ts_closed, TIME(ts_close) as time_ts_closed," +
+        " DATE(ts_create) as date_ts_create, TIME(ts_create) as time_ts_create, " +
+        " DATE(ts_close) as date_ts_closed, TIME(ts_close) as time_ts_closed, " +
+        " force_closed, force_comment, " +
         " DATE(ts_pay) as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders where admin_id=?;",
       [admin_id],
       (err, res) => {
@@ -414,13 +419,14 @@ async function ORDERS_close_smena(connection, ans, admin_id) {
         // console.log(err);
 
         if (res == undefined) {
-          ans.data = ["res = undefined"];
+          ans.data = ["empty response"];
           resolve(ans);
           return;
         }
 
         if (res.length == 0) {
-          ans.data = ["res = null"];
+          // не было ордеров в смене
+          ans.data = ["orders list is empty"];
           resolve(ans);
           return;
         }
