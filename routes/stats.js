@@ -76,9 +76,12 @@ router.get("/get_income_stats", async function (req, res, next) {
 async function GET_orders_stat(connection, req) {
   return new Promise((resolve) => {
     connection.query(
-      "select admin_id, carName, carNum, client_id, closed, lts, order_number, order_works, payed, pay_type, smena_id, ts_close, ts_create," +
-        "unix_timestamp(ts_close) - unix_timestamp(ts_create) as ts_delta," +
-        "ts_pay, worker_id, force_closed, force_comment " +
+      "select admin_id, carName, carNum, client_id, closed, lts, order_number, order_works, payed, pay_type, smena_id, " +
+        " DATE_FORMAT(ts_create, '%Y-%m-%d') as date_ts_create, TIME(ts_create) as time_ts_create," +
+        " DATE_FORMAT(ts_close, '%Y-%m-%d') as date_ts_closed, TIME(ts_close) as time_ts_closed," +
+        " DATE_FORMAT(ts_pay, '%Y-%m-%d') as date_ts_payed, TIME(ts_pay) as time_ts_payed, " +
+        " unix_timestamp(ts_close) - unix_timestamp(ts_create) as ts_delta," +
+        " worker_id, force_closed, force_comment " +
         " from orders_stat where date(ts_create) >= ? and date(ts_close) <= ? and (admin_id=? or ?) and (worker_id=? or ?);",
       [
         req.query.date_from,
