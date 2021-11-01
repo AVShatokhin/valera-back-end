@@ -106,7 +106,7 @@ async function GET_orders_stat(connection, req) {
 async function GET_smena(connection, req) {
   return new Promise((resolve) => {
     connection.query(
-      "select admin_id, open_ts, close_ts, smena_id from smena where date(open_ts) >= ? and date(close_ts) <= ?;",
+      "select admin_id, open_ts, close_ts, smena_id from smena where date(open_ts) >= ? and date(close_ts) <= ? and close_ts > 0;",
       [req.query.date_from, req.query.date_to],
       (err, res) => {
         // console.log(err);
