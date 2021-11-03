@@ -52,16 +52,19 @@ router.get("/get_income_stats", async function (req, res, next) {
               __smenas[order.smena_id].workers_salary[order.worker_id] +=
                 Math.round((work.stavka_worker / 100) * work.cost * work.count);
 
-              switch (order.pay_type) {
-                case "nal":
-                  __smenas[order.smena_id].income_nal += work.cost * work.count;
-                  break;
-                case "eq":
-                  __smenas[order.smena_id].income_eq += work.cost * work.count;
-                  break;
-                default:
-                  break;
-              }
+              if (order.payed == "true")
+                switch (order.pay_type) {
+                  case "nal":
+                    __smenas[order.smena_id].income_nal +=
+                      work.cost * work.count;
+                    break;
+                  case "eq":
+                    __smenas[order.smena_id].income_eq +=
+                      work.cost * work.count;
+                    break;
+                  default:
+                    break;
+                }
             }
           });
         }

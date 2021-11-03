@@ -226,11 +226,13 @@ router.get("/get", async function (req, res, next) {
 async function ORDERS_get(connection, ans, admin_id) {
   return new Promise((resolve) => {
     connection.query(
-      "select pay_type, smena_id, unix_timestamp(lts) as last_ts, order_id, worker_id, client_id, admin_id, order_number, payed, closed, order_works, carName, carNum, " +
-        " DATE(ts_create) as date_ts_create, TIME(ts_create) as time_ts_create, " +
-        " DATE(ts_close) as date_ts_closed, TIME(ts_close) as time_ts_closed, " +
+      "select pay_type, smena_id, unix_timestamp(lts) as last_ts, order_id, worker_id, client_id, " +
+        " admin_id, order_number, payed, closed, order_works, carName, carNum, " +
         " force_closed, force_comment, " +
-        " DATE(ts_pay) as date_ts_payed, TIME(ts_pay) as time_ts_payed from orders where admin_id=?;",
+        " DATE_FORMAT(ts_create, '%Y-%m-%d') as date_ts_create, TIME(ts_create) as time_ts_create, " +
+        " DATE_FORMAT(ts_close, '%Y-%m-%d') as date_ts_closed, TIME(ts_close) as time_ts_closed, " +
+        " DATE_FORMAT(ts_pay, '%Y-%m-%d') as date_ts_payed, TIME(ts_pay) as time_ts_payed " +
+        " from orders where admin_id = ? ;",
       [admin_id],
       (err, res) => {
         if (res != undefined)
