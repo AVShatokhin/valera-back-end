@@ -41,6 +41,7 @@ router.get("/get_income_stats", async function (req, res, next) {
                 undefined
               )
                 __smenas[order.smena_id].admins_salary[order.admin_id] = 0;
+
               if (
                 __smenas[order.smena_id].workers_salary[order.worker_id] ==
                 undefined
@@ -60,6 +61,10 @@ router.get("/get_income_stats", async function (req, res, next) {
                     break;
                   case "eq":
                     __smenas[order.smena_id].income_eq +=
+                      work.cost * work.count;
+                    break;
+                  case "bonus":
+                    __smenas[order.smena_id].income_bonus +=
                       work.cost * work.count;
                     break;
                   default:
@@ -124,6 +129,7 @@ async function GET_smena(connection, req) {
               orders: [],
               income_eq: 0,
               income_nal: 0,
+              income_bonus: 0,
               workers_salary: {},
               admins_salary: {},
             };
@@ -150,6 +156,7 @@ async function GET_smena(connection, req) {
             orders: [],
             income_eq: 0,
             income_nal: 0,
+            income_bonus: 0,
             workers_salary: {},
             admins_salary: {},
           };
