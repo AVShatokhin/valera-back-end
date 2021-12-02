@@ -107,6 +107,33 @@ async function GET_orders_stat(connection, req) {
 }
 
 async function GET_smena(connection, req) {
+  if (req.query.admin_id != undefined) {
+    return new Promise((resolve) => {
+      connection.query(
+        "select admin_id, open_ts, close_ts, smena_id from smena where date(open_ts) >= ? and date(close_ts) <= ? and close_ts > 0 and admin_id = ?;",
+        [req.query.date_from, req.query.date_to, req.query.admin_id],
+        (err, res) => {
+          // console.log(err);
+          // console.log(res);
+          let __res = {};
+          res.forEach((element) => {
+            __res[element.smena_id] = {
+              open_ts: element.open_ts,
+              close_ts: element.close_ts,
+              admin_id: element.admin_id,
+              orders: [],
+              income_eq: 0,
+              income_nal: 0,
+              workers_salary: {},
+              admins_salary: {},
+            };
+          });
+          resolve(__res);
+        }
+      );
+    });
+  }
+
   return new Promise((resolve) => {
     connection.query(
       "select admin_id, open_ts, close_ts, smena_id from smena where date(open_ts) >= ? and date(close_ts) <= ? and close_ts > 0;",
