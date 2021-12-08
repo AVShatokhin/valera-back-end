@@ -367,6 +367,10 @@ router.get("/close_smena", async function (req, res, next) {
     data: [],
   };
 
+  if (req.query?.admin_id == null) {
+    res.json(ans);
+  }
+
   let _check = await CHECK_SMENA(connection, req.query.admin_id);
 
   if (_check == 0) {
@@ -449,8 +453,8 @@ async function ORDERS_close_smena(connection, ans, admin_id) {
           (err, res) => {
             lib.proceed(ans, err, res);
             connection.query(
-              "delete from orders where closed='true';",
-              [],
+              "delete from orders where closed='true' and admin_id=?;",
+              [admin_id],
               (err, res) => {
                 ans.status.success = true;
                 resolve(ans);
