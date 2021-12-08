@@ -9,25 +9,11 @@ router.get("/get_income_stats", async function (req, res, next) {
     status: {
       success: true,
     },
-    data: [],
+    data: {},
   };
 
-  // let __admin_id = req.query.admin_id;
-  // let __worker_id = req.query.worker_id;
-
-  // req.query.date_from = "2021-07-21";
-  // req.query.date_to = "2021-07-22";
-
-  // let __workers = await GET_workers(connection);
-  // let __admins = await GET_admins(connection);
   let __smenas = await GET_smena(connection, req);
   let __orders = await GET_orders_stat(connection, req);
-
-  // console.log(__smenas);
-  // console.log(__orders);
-
-  // res.json(ans);
-  // return;
 
   if (__orders.length > 0) {
     __orders.forEach((order) => {
@@ -76,7 +62,17 @@ router.get("/get_income_stats", async function (req, res, next) {
       }
     });
   }
-  ans.data = __smenas;
+
+  if (req.query.worker_id != null) {
+    for (smena in __smenas) {
+      if (__smenas[smena].orders.length > 0) {
+        ans.data[smena] = __smenas[smena];
+      }
+    }
+  } else {
+    ans.data = __smenas;
+  }
+
   // console.log(ans);
   res.json(ans);
 });
@@ -125,8 +121,8 @@ async function GET_smena(connection, req) {
       sql,
       [req.query.date_from, req.query.date_to, admin_id],
       (err, res) => {
-        console.log(err);
-        console.log(res);
+        // console.log(err);
+        // console.log(res);
         let __res = {};
         res.forEach((element) => {
           __res[element.smena_id] = {
