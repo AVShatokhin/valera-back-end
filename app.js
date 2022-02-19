@@ -13,6 +13,7 @@ var CLIENTS_endPoints = require("./routes/clients");
 var WORKERS_endPoints = require("./routes/workers");
 var ORDERS_endPoints = require("./routes/orders");
 var STATS_endPoints = require("./routes/stats");
+var KVS_endPoints = require("./routes/kvs");
 
 var app = express();
 
@@ -33,6 +34,7 @@ app.use("/clients", CLIENTS_endPoints);
 app.use("/workers", WORKERS_endPoints);
 app.use("/orders", ORDERS_endPoints);
 app.use("/stats", STATS_endPoints);
+app.use("/kvs", KVS_endPoints);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -75,6 +77,7 @@ connection.connect((err) => {
       WORKERS_endPoints.setConnection(connection);
       ORDERS_endPoints.setConnection(connection);
       STATS_endPoints.setConnection(connection);
+      KVS_endPoints.setConnection(connection);
       console.log("mysql connected");
     }
   });
