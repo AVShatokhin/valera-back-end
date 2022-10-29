@@ -25,7 +25,11 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+//app.use("/.well-known/acme-challenge/44k1ARb_db3h7O2dhx4GSM0Awn0_A1Kacs1eevh3qlo", express.static("./public/.well-known/acme-challenge/44k1ARb_db3h7O2dhx4GSM0Awn0_A1Kacs1eevh3qlo"));
+app.use("/.well-known/acme-challenge/J5nH6mZPmdMYftng44z7uVhebJOa6HxlZiAWQs7W0UU", express.static("./public/verif"));
+
+//app.use(express.static("/home/webmaster/valera-back-end/public/", "public"));
+
 
 app.use("/", INDEX_endPoints);
 app.use("/user", USER_endPoints);

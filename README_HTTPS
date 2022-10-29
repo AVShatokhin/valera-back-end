@@ -1,0 +1,26 @@
+1) запускаем команду 
+certbot certonly --manual
+
+2) он просит создать энд поинт с содержимым
+
+Create a file containing just this data:
+
+rxowJRFAr2JFDSnH7AdICaY5qCPUjBidGZZnYp_RkeY.D-Vx4O2Prl_juvAOy5r2M-rqd98fS-KkyHGde46GX5Y
+
+And make it available on your web server at this URL:
+
+http://autoservicebackend.ru/.well-known/acme-challenge/rxowJRFAr2JFDSnH7AdICaY5qCPUjBidGZZnYp_RkeY
+
+для этого редактируем файл app.js и /public/verif
+
+3) после чего копируем файлы
+
+/etc/letsencrypt/archive
+cert.pem
+privkey.pem
+chain.pem
+
+в /home/webmaster/valera-back-end/ssl/
+
+4) рестартуем контейнер
+
